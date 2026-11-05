@@ -99,7 +99,7 @@
   /* ---------- Footer + glass enquiry button ---------- */
   .footer{
     position:fixed;left:0;right:0;bottom:0;z-index:20;
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;gap:12px;text-align:center;
     padding:14px 28px calc(14px + env(safe-area-inset-bottom));
     background:linear-gradient(to top,rgba(0,0,0,.65),transparent);
     color:rgba(255,255,255,.85);font-size:14px;letter-spacing:.03em;
@@ -123,8 +123,7 @@
   @media (max-width:600px){
     /* show the whole video (no cropped text) on portrait phones */
     .hero video{object-fit:contain}
-    .footer{flex-direction:column-reverse;gap:12px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));text-align:center;font-size:12px}
-    .enquiry{width:100%;justify-content:center}
+    .footer{padding:12px 16px calc(16px + env(safe-area-inset-bottom));font-size:12px}
     :root{--header-h:60px;--logo-w-center:min(230px,62vw);--logo-w-header:84px}
     body.ready .logo{
       left:calc(16px + env(safe-area-inset-left));

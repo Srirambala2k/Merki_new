@@ -96,7 +96,35 @@
   html,body{height:100dvh;overscroll-behavior:none;-webkit-text-size-adjust:100%}
   .hero{height:100dvh}
   .hero video{object-position:center}
+  /* ---------- Footer + glass enquiry button ---------- */
+  .footer{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:14px 28px calc(14px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,rgba(0,0,0,.65),transparent);
+    color:rgba(255,255,255,.85);font-size:14px;letter-spacing:.03em;
+    opacity:0;transform:translateY(20px);
+    transition:opacity .9s ease .6s, transform .9s ease .6s;
+  }
+  body.ready .footer{opacity:1;transform:none}
+  .enquiry{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:12px 26px;border-radius:999px;text-decoration:none;
+    color:#fff;font-weight:600;font-size:15px;
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(16px) saturate(160%);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid rgba(255,255,255,.3);
+    box-shadow:0 8px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.25);
+    transition:background .25s, transform .25s;
+  }
+  .enquiry:hover{background:rgba(255,255,255,.22);transform:translateY(-2px)}
+
   @media (max-width:600px){
+    /* show the whole video (no cropped text) on portrait phones */
+    .hero video{object-fit:contain}
+    .footer{flex-direction:column-reverse;gap:12px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));text-align:center;font-size:12px}
+    .enquiry{width:100%;justify-content:center}
     :root{--header-h:60px;--logo-w-center:min(230px,62vw);--logo-w-header:84px}
     body.ready .logo{
       left:calc(16px + env(safe-area-inset-left));
@@ -117,6 +145,12 @@
     <video id="vid" src="59f33a7e0dd041fe995b3014a7f73d5c.mp4"
            autoplay muted loop playsinline preload="auto"></video>
   </section>
+
+  <footer class="footer">
+    <span>&copy; 2026 Merki Construction. Website under construction.</span>
+    <a class="enquiry" href="https://wa.me/918122512223?text=Hi%20Merki%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
+       target="_blank" rel="noopener">Enquiry</a>
+  </footer>
 
   <div class="intro"></div>
 

@@ -96,6 +96,7 @@
   html,body{height:100dvh;overscroll-behavior:none;-webkit-text-size-adjust:100%}
   .hero{height:100dvh}
   .hero video{object-position:center}
+  .hero video.bg{display:none;position:absolute;inset:0}
   /* ---------- Footer + glass enquiry button ---------- */
   .footer{
     position:fixed;left:0;right:0;bottom:0;z-index:20;
@@ -121,8 +122,15 @@
   .enquiry:hover{background:rgba(255,255,255,.22);transform:translateY(-2px)}
 
   @media (max-width:600px){
-    /* show the whole video (no cropped text) on portrait phones */
-    .hero video{object-fit:contain}
+    /* Portrait phones: blurred copy of the video fills the screen (no black),
+       sharp video sits in the middle sized so its text is fully visible. */
+    .hero video.bg{display:block;object-fit:cover;filter:blur(26px) brightness(.75);transform:scale(1.25)}
+    .hero video.main{
+      position:absolute;left:50%;top:50%;width:175vw;height:auto;aspect-ratio:16/9;
+      transform:translate(-50%,-50%);object-fit:cover;
+      -webkit-mask-image:linear-gradient(to bottom,transparent,#000 18%,#000 82%,transparent);
+              mask-image:linear-gradient(to bottom,transparent,#000 18%,#000 82%,transparent);
+    }
     .footer{padding:12px 16px calc(16px + env(safe-area-inset-bottom));font-size:12px}
     :root{--header-h:60px;--logo-w-center:min(230px,62vw);--logo-w-header:84px}
     body.ready .logo{
@@ -141,7 +149,9 @@
 <body>
 
   <section class="hero">
-    <video id="vid" src="59f33a7e0dd041fe995b3014a7f73d5c.mp4"
+    <video class="bg" src="59f33a7e0dd041fe995b3014a7f73d5c.mp4"
+           autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+    <video id="vid" class="main" src="59f33a7e0dd041fe995b3014a7f73d5c.mp4"
            autoplay muted loop playsinline preload="auto"></video>
   </section>
 
@@ -159,7 +169,10 @@
 
 <script>
   const v = document.getElementById('vid');
-  v.play().catch(()=>{});
+  const bg = document.querySelector('video.bg');
+  v.play().catch(()=>{}); bg.play().catch(()=>{});
+  // keep the blurred background copy in sync with the main video
+  setInterval(()=>{ if (Math.abs(bg.currentTime - v.currentTime) > 0.3) bg.currentTime = v.currentTime; }, 1000);
   // Hold the logo in the center, then fly it to the header and reveal the video.
   setTimeout(()=>document.body.classList.add('ready'), 2600);
 </script>

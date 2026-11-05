@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merki Construction</title>
+<style>
+  :root{
+    --header-h: 76px;
+    --logo-w-center: min(300px, 55vw);
+    --logo-w-header: 120px;
+    /* Watermark blur patch (bottom-right by default). Adjust to match the video. */
+    --wm-w: 190px;
+    --wm-h: 64px;
+    --wm-right: 0px;
+    --wm-bottom: 0px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
+
+  /* ---------- Hero video (only content) ---------- */
+  .hero{position:fixed;inset:0;background:#000}
+  .hero video{width:100%;height:100%;object-fit:cover;display:block}
+
+  /* Blur over the video watermark */
+  .wm-blur{
+    position:absolute;right:var(--wm-right);bottom:var(--wm-bottom);
+    width:var(--wm-w);height:var(--wm-h);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    background:rgba(0,0,0,.15);
+    -webkit-mask-image:radial-gradient(ellipse at center,#000 55%,transparent 100%);
+            mask-image:radial-gradient(ellipse at center,#000 55%,transparent 100%);
+    pointer-events:none;
+  }
+
+  /* ---------- Glassmorphism header ---------- */
+  .header{
+    position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:20;
+    background:rgba(255,255,255,.08);
+    backdrop-filter:blur(18px) saturate(160%);
+    -webkit-backdrop-filter:blur(18px) saturate(160%);
+    border-bottom:1px solid rgba(255,255,255,.18);
+    box-shadow:0 8px 32px rgba(0,0,0,.25);
+    opacity:0;transform:translateY(-100%);
+    transition:opacity .9s ease, transform .9s cubic-bezier(.2,.8,.2,1);
+  }
+  body.ready .header{opacity:1;transform:none}
+
+  /* ---------- Intro black screen ---------- */
+  .intro{
+    position:fixed;inset:0;z-index:30;background:#000;
+    background:radial-gradient(circle at center,#161616 0%,#000 65%);
+    transition:opacity 1.1s ease .2s;
+  }
+  body.ready .intro{opacity:0;pointer-events:none}
+
+  /* subtle light sweep behind logo */
+  .intro::after{
+    content:"";position:absolute;left:50%;top:50%;width:520px;height:520px;
+    transform:translate(-50%,-50%) scale(.4);border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.18),transparent 65%);
+    opacity:0;animation:glow 2s ease-out .2s forwards;
+  }
+  @keyframes glow{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+                  40%{opacity:1}
+                  100%{opacity:.0;transform:translate(-50%,-50%) scale(1.4)}}
+
+  /* ---------- The logo (single element, flies center -> header) ---------- */
+  .logo{
+    position:fixed;z-index:40;
+    left:50%;top:50%;
+    width:var(--logo-w-center);
+    transform:translate(-50%,-50%) scale(.6);
+    opacity:0;filter:blur(14px) drop-shadow(0 0 0 rgba(255,255,255,0));
+    animation:pop 1.2s cubic-bezier(.2,1.2,.3,1) .3s forwards;
+    transition:
+      left 1.2s cubic-bezier(.7,0,.2,1),
+      top 1.2s cubic-bezier(.7,0,.2,1),
+      width 1.2s cubic-bezier(.7,0,.2,1),
+      transform 1.2s cubic-bezier(.7,0,.2,1);
+  }
+  .logo img{width:100%;display:block}
+  @keyframes pop{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.6);filter:blur(14px)}
+    60%{opacity:1;transform:translate(-50%,-50%) scale(1.06);filter:blur(0) drop-shadow(0 0 28px rgba(255,255,255,.45))}
+    100%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0) drop-shadow(0 0 18px rgba(255,255,255,.25))}
+  }
+  body.ready .logo{
+    left:28px;top:calc(var(--header-h) / 2);
+    width:var(--logo-w-header);
+    transform:translate(0,-50%) scale(1);
+    animation:none;opacity:1;filter:none;
+  }
+
+  @media (max-width:600px){
+    :root{--header-h:64px;--logo-w-header:92px;--wm-w:130px;--wm-h:48px}
+    body.ready .logo{left:16px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.01s!important;transition-duration:.01s!important}
+  }
+</style>
+</head>
+<body>
+
+  <section class="hero">
+    <video id="vid" src="59f33a7e0dd041fe995b3014a7f73d5c.mp4"
+           autoplay muted loop playsinline preload="auto"></video>
+  </section>
+
+  <div class="intro"></div>
+
+  <div class="logo">
+    <img src="the merki logo-white.png.png" alt="Merki Construction">
+  </div>
+
+<script>
+  const v = document.getElementById('vid');
+  v.play().catch(()=>{});
+  // Hold the logo in the center, then fly it to the header and reveal the video.
+  setTimeout(()=>document.body.classList.add('ready'), 2600);
+</script>
+</body>
+</html>

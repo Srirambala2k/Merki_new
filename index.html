@@ -108,18 +108,34 @@
     transition:opacity .9s ease .6s, transform .9s ease .6s;
   }
   body.ready .footer{opacity:1;transform:none}
+  /* ---------- Hanging enquiry button ---------- */
+  #thread{position:fixed;inset:0;width:100%;height:100%;z-index:21;pointer-events:none;overflow:visible}
+  #thread path{fill:none;stroke:rgba(200,225,255,.85);stroke-width:1.3;stroke-linecap:round;
+    filter:drop-shadow(0 0 3px rgba(140,190,255,.9)) drop-shadow(0 0 8px rgba(100,160,255,.6))}
+  #hang{position:fixed;left:0;top:0;width:0;height:0;z-index:22;will-change:transform}
+  #hanger-vis{opacity:0;transition:opacity .5s ease}
+  #hanger-vis.show{opacity:1}
   .enquiry{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:12px 26px;border-radius:999px;text-decoration:none;
-    color:#fff;font-weight:600;font-size:15px;
-    background:rgba(255,255,255,.12);
-    backdrop-filter:blur(16px) saturate(160%);
-    -webkit-backdrop-filter:blur(16px) saturate(160%);
-    border:1px solid rgba(255,255,255,.3);
-    box-shadow:0 8px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.25);
-    transition:background .25s, transform .25s;
+    position:absolute;left:0;top:0;transform:translateX(-50%);white-space:nowrap;
+    display:inline-flex;align-items:center;
+    padding:11px 28px;border-radius:999px;text-decoration:none;
+    color:#fff;font-weight:700;font-size:15px;letter-spacing:.02em;
+    background:rgba(8,14,32,.55);
+    backdrop-filter:blur(14px) saturate(150%);
+    -webkit-backdrop-filter:blur(14px) saturate(150%);
+    border:1px solid rgba(255,255,255,.28);
+    box-shadow:0 8px 28px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2);
+    transition:background .25s, box-shadow .25s, translate .25s;
+    touch-action:manipulation;
   }
-  .enquiry:hover{background:rgba(255,255,255,.22);transform:translateY(-2px)}
+  .enquiry:hover,.enquiry:focus-visible{
+    background:rgba(20,32,70,.65);translate:0 -2px;outline:none;
+    box-shadow:0 10px 32px rgba(0,0,0,.45),0 0 22px rgba(120,180,255,.55), inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .spark{position:fixed;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;z-index:23;pointer-events:none;
+    background:#d8ebff;box-shadow:0 0 8px 2px rgba(130,190,255,.9);
+    animation:spark .8s ease-out forwards}
+  @keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
 
   @media (max-width:600px){
     /* Portrait phones: blurred copy of the video fills the screen (no black),
@@ -157,9 +173,15 @@
 
   <footer class="footer">
     <span>&copy; 2026 Merki Construction. Website under construction.</span>
-    <a class="enquiry" href="https://wa.me/918122512223?text=Hi%20Merki%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
-       target="_blank" rel="noopener">Enquiry</a>
   </footer>
+
+  <div id="hanger-vis">
+    <svg id="thread" aria-hidden="true"><path id="threadPath" d=""/></svg>
+    <div id="hang">
+      <a class="enquiry" id="enquiry" href="https://wa.me/918122512223?text=Hi%20Merki%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
+         target="_blank" rel="noopener">Enquiry</a>
+    </div>
+  </div>
 
   <div class="intro"></div>
 
@@ -175,6 +197,92 @@
   setInterval(()=>{ if (Math.abs(bg.currentTime - v.currentTime) > 0.3) bg.currentTime = v.currentTime; }, 1000);
   // Hold the logo in the center, then fly it to the header and reveal the video.
   setTimeout(()=>document.body.classList.add('ready'), 2600);
+
+  /* ---------- Hanging Enquiry button ----------
+     The headline "Ours is next." is burned into the video, so the anchor points are
+     the bottoms of the letters O, i, t measured in the 1920x1080 video frame. */
+  (function(){
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const vis = document.getElementById('hanger-vis');
+    const hang = document.getElementById('hang');
+    const btn  = document.getElementById('enquiry');
+    const path = document.getElementById('threadPath');
+    const VW=1920, VH=1080;
+    const LETTER_X=[617, 921.5, 1293.5];   // O, i, t centres (video px)
+    const BASE_Y=316;                      // just under the headline baseline
+
+    const MAX_HOVERS = 3;                  // clickable only after this many dodges
+    let hovers = reduce ? MAX_HOVERS : 0, pos = reduce ? 2 : 0;
+    let lastDodge = 0, lastMove = performance.now(), arrived = true, init = false;
+    let px=0, py=0, vx=0, vy=0, th=0, om=0, last=performance.now();
+
+    function geom(){
+      const r=v.getBoundingClientRect();
+      const s=Math.max(r.width/VW, r.height/VH);
+      return {s, ox:r.left+(r.width-VW*s)/2, oy:r.top+(r.height-VH*s)/2};
+    }
+    function spark(x,y){
+      for(let i=0;i<10;i++){
+        const e=document.createElement('i'); e.className='spark';
+        const a=Math.random()*6.283, d=14+Math.random()*26;
+        e.style.left=x+'px'; e.style.top=y+'px';
+        e.style.setProperty('--dx',Math.cos(a)*d+'px'); e.style.setProperty('--dy',Math.sin(a)*d+'px');
+        document.body.appendChild(e); setTimeout(()=>e.remove(),850);
+      }
+    }
+    function hop(){ pos=(pos+1)%LETTER_X.length; lastMove=performance.now(); arrived=false; }
+    function dodge(){ hovers++; lastDodge=performance.now(); hop(); }
+    // not locked yet -> keep roaming between the letters on its own
+    setInterval(()=>{
+      if(hovers>=MAX_HOVERS || reduce || document.hidden) return;
+      if(performance.now()-lastMove>3800) hop();
+    }, 500);
+
+    document.addEventListener('pointermove', e=>{
+      if(hovers>=MAX_HOVERS || reduce || e.pointerType!=='mouse' || performance.now()-lastDodge<900) return;
+      const r=btn.getBoundingClientRect(), m=40;
+      if(e.clientX>r.left-m && e.clientX<r.right+m && e.clientY>r.top-m && e.clientY<r.bottom+m) dodge();
+    });
+    btn.addEventListener('click', e=>{
+      // detail===0 -> keyboard (Enter/Space): always allowed
+      if(hovers<MAX_HOVERS && !reduce && e.detail!==0){ e.preventDefault(); dodge(); }
+    });
+
+    function frame(now){
+      const dt=Math.min(.033,(now-last)/1000)||.016; last=now;
+      const g=geom(), L=Math.max(52,Math.min(130,120*g.s));
+      const tx=g.ox+LETTER_X[pos]*g.s, ty=g.oy+BASE_Y*g.s;
+      let ax=0;
+      if(!init || reduce){ px=tx; py=ty; vx=vy=0; init=true; }
+      else{
+        const K=70, C=9;                       // underdamped spring -> overshoot
+        const oldvx=vx;
+        vx+=(K*(tx-px)-C*vx)*dt; vy+=(K*(ty-py)-C*vy)*dt;
+        px+=vx*dt; py+=vy*dt;
+        ax=(vx-oldvx)/dt;
+      }
+      if(!reduce){
+        const G=1800, D=2.4, MAXA=.55;
+        ax=Math.max(-3000,Math.min(3000,ax))*.35;      // soften the push from the moving anchor
+        om+=(-(G/L)*Math.sin(th)-(ax/L)*Math.cos(th)-D*om)*dt;
+        th+=om*dt;
+        if(th>MAXA){th=MAXA;om=Math.min(om,0);} else if(th<-MAXA){th=-MAXA;om=Math.max(om,0);}  // don't stick at the limit
+      }
+      const idle=reduce?0:(3*Math.PI/180)*Math.sin(now/1000*2*Math.PI/3.5);
+      const a=th+idle;
+      const bx=px+L*Math.sin(a), by=py+L*Math.cos(a);
+      // thread: slight sag, more while the anchor is moving
+      const sp=Math.hypot(vx,vy);
+      const cx=(px+bx)/2-Math.max(-40,Math.min(40,vx*.05)), cy=(py+by)/2+5+Math.min(25,sp*.04);
+      path.setAttribute('d',`M${px.toFixed(1)} ${py.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}`);
+      hang.style.transform=`translate(${bx.toFixed(1)}px,${by.toFixed(1)}px) rotate(${a}rad)`;
+      if(!arrived && Math.hypot(tx-px,ty-py)<4 && init){ arrived=true; spark(px,py); }
+      // hide while the headline animates in at the start of each video loop
+      vis.classList.toggle('show', document.body.classList.contains('ready') && v.currentTime>1.4);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  })();
 </script>
 </body>
 </html>

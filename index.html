@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
 <title>Merki Construction</title>
 <style>
   :root{
@@ -92,9 +93,18 @@
     animation:none;opacity:1;filter:none;
   }
 
+  html,body{height:100dvh;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+  .hero{height:100dvh}
+  .hero video{object-position:center}
   @media (max-width:600px){
-    :root{--header-h:64px;--logo-w-header:92px;--wm-w:130px;--wm-h:48px}
-    body.ready .logo{left:16px}
+    :root{--header-h:60px;--logo-w-center:min(230px,62vw);--logo-w-header:84px}
+    body.ready .logo{
+      left:calc(16px + env(safe-area-inset-left));
+      top:calc(var(--header-h) / 2 + env(safe-area-inset-top));
+    }
+  }
+  @media (max-height:480px) and (orientation:landscape){
+    :root{--header-h:52px;--logo-w-center:180px;--logo-w-header:72px}
   }
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01s!important;transition-duration:.01s!important}
